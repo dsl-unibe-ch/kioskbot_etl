@@ -19,7 +19,11 @@ class ETLSettings(BaseSettings):
     AZURE_CONTAINER_STORAGE_NAME: str | None = None
     AZURE_CONTAINER_STORAGE_SECRETS_NAME: str | None = None
     AZURE_CONTAINER_STORAGE_ETL_FILES_NAME: str | None = None
-    model_config = SettingsConfigDict(env_file=_etl_env_file, env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=_etl_env_file,
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 class AppSettings(BaseSettings):
     """
