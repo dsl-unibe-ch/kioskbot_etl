@@ -1,6 +1,7 @@
 seed_urls:
   - https://www.unibe.ch/innovation/index_ger.html
   - https://www.unibe.ch/innovation/fuer_studierende/ideenlabor/index_ger.html
+  - https://lead.unibe.ch/forschung/lehre_im_ideenlabor/ideenlabor_help/help_pixel/index_ger.html
   - https://lead.unibe.ch/forschung/lehre_im_ideenlabor/index_ger.html
   - https://www.unibe.ch/universitaet/organisation/leitung_und_zentralbereich/verwaltungsdirektion/technologietransfer_unitectra/index_ger.html
   - https://www.unibe.ch/universitaet/organisation/leitung_und_zentralbereich/vizerektorat_forschung_und_innovation/innovation_office/index_ger.html
@@ -8,6 +9,7 @@ seed_urls:
   - https://www.unibe.ch/forschung/foerdermittel_und_preise/unibe_foerdergefaesse/unibe_inno_grant/index_ger.html
   - https://www.unibe.ch/forschung/foerdermittel_und_preise/unibe_foerdergefaesse/index_ger.html
   - https://www.unibe.ch/unibe/portal/content/e1133/e1528486/e1529568/e1529579/e1529589/files1749961/Guidelines_VentureFellowship_2026_Oct_reviewed_ger.pdf
+  - https://www.unibe.ch/research/services/contact_points/go_and_inno/index_eng.html
 allowed_domains: [www.unibe.ch, lead.unibe.ch]
 allow:
   - /innovation/

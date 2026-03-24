@@ -54,10 +54,9 @@ HTTP_STATUS_GATEWAY_TIMEOUT = 504
 
 INDEX_CREATE_MAX_ATTEMPTS = 4
 INDEX_CREATE_RETRY_SECONDS = 5
-INDEX_COUNT_CHECK_ATTEMPTS = 8
+INDEX_COUNT_CHECK_ATTEMPTS = 24
 INDEX_COUNT_CHECK_SLEEP_SECONDS = 5
 INDEX_EXPORT_PAGE_SIZE = 1000
-
 
 
 
@@ -292,32 +291,46 @@ def _create_index_with_retry(
             raise
 
 
-def _assert_index_not_empty(index_client: SearchIndexClient, index_name: str) -> None:
-    """Poll index statistics and fail fast if index remains empty."""
-    doc_count = 0
+def _assert_index_not_empty(
+    index_client: SearchIndexClient,
+    search_client: SearchClient,
+    index_name: str,
+) -> None:
+    """Poll multiple count endpoints and fail if index remains empty."""
+    doc_count_stats = 0
+    doc_count_search = 0
     for attempt in range(1, INDEX_COUNT_CHECK_ATTEMPTS + 1):
         stats = index_client.get_index_statistics(index_name)
-        doc_count = stats.get("document_count", stats.get("documentCount", 0))
-        if doc_count > 0:
+        doc_count_stats = int(stats.get("document_count", stats.get("documentCount", 0)))
+        try:
+            doc_count_search = int(search_client.get_document_count())
+        except HttpResponseError:
+            doc_count_search = 0
+
+        if max(doc_count_stats, doc_count_search) > 0:
             logger.info(
-                "Verified index '%s' is populated (document_count=%d).",
+                "Verified index '%s' is populated (stats=%d, search=%d).",
                 index_name,
-                doc_count,
+                doc_count_stats,
+                doc_count_search,
             )
             return
         if attempt < INDEX_COUNT_CHECK_ATTEMPTS:
             logger.warning(
-                "Index '%s' still empty after upload (attempt %d/%d). Rechecking in %ds...",
+                "Index '%s' still empty after upload (attempt %d/%d, stats=%d, search=%d). "
+                "Rechecking in %ds...",
                 index_name,
                 attempt,
                 INDEX_COUNT_CHECK_ATTEMPTS,
+                doc_count_stats,
+                doc_count_search,
                 INDEX_COUNT_CHECK_SLEEP_SECONDS,
             )
             time.sleep(INDEX_COUNT_CHECK_SLEEP_SECONDS)
 
     raise RuntimeError(
         f"ALARM: index '{index_name}' is empty after upload verification "
-        f"({doc_count} documents)."
+        f"(stats={doc_count_stats}, search={doc_count_search})."
     )
 
 
@@ -497,7 +510,7 @@ def run_etl(xlsx_path: Path, index_name: str, settings: AppSettings, output_dir:
         logger.exception("Error uploading documents")
         raise
 
-    _assert_index_not_empty(index_client, index_name)
+    _assert_index_not_empty(index_client, search_client, index_name)
 
     return {"index_name": index_name, "chunk_count": len(documents)}
 

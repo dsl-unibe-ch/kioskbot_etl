@@ -9,6 +9,7 @@ from typing import ClassVar
 
 import scrapy
 import yaml
+from scrapy.http import TextResponse
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 from w3lib.url import canonicalize_url
@@ -89,6 +90,9 @@ class LinkSpider(CrawlSpider):
         if url not in self._exported:
             self._exported.add(url)
             yield {"URL": url}
+
+        if not isinstance(response, TextResponse):
+            return
 
         for href in response.css("a::attr(href)").getall():
             if ".pdf" in href.lower():

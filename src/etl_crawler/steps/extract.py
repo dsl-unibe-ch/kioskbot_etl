@@ -360,15 +360,27 @@ def run(run_context: RunContext) -> ExtractResult:
 
     urls: list[str] = []
     pdf_links: list[str] = []
+    seen_urls: set[str] = set()
+    seen_pdfs: set[str] = set()
     with url_list_path.open("r", encoding="utf-8") as f:
         for line in f:
             data = json.loads(line.strip())
-            if "URL" in data:
-                urls.append(data["URL"])
             if "PDF" in data:
-                pdf_links.append(data["PDF"])
-            elif "URL" in data and data["URL"].lower().endswith(".pdf"):
-                pdf_links.append(data["URL"])
+                pdf_url = data["PDF"]
+                if pdf_url not in seen_pdfs:
+                    seen_pdfs.add(pdf_url)
+                    pdf_links.append(pdf_url)
+                continue
+
+            if "URL" in data:
+                url = data["URL"]
+                if url.lower().endswith(".pdf"):
+                    if url not in seen_pdfs:
+                        seen_pdfs.add(url)
+                        pdf_links.append(url)
+                elif url not in seen_urls:
+                    seen_urls.add(url)
+                    urls.append(url)
 
     output_file = run_context.data_dir / f"{run_context.customer_name}_content.jsonl"
     logger.info("Extracting content from %d URLs and %d PDFs", len(urls), len(pdf_links))

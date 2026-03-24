@@ -23,6 +23,27 @@ STEP_REGISTRY: dict[str, Any] = {
 }
 
 
+def _enforce_quiet_dependency_logging() -> None:
+    """Clamp noisy third-party loggers to reduce terminal spam."""
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    for handler in root_logger.handlers:
+        handler.setLevel(logging.INFO)
+
+    noisy_loggers = (
+        "pdfminer",
+        "pdfplumber",
+        "httpcore",
+        "httpx",
+        "urllib3",
+        "openai",
+        "azure",
+        "azure.core.pipeline.policies.http_logging_policy",
+    )
+    for logger_name in noisy_loggers:
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
+
+
 @dataclass
 class RunContext:
     """Shared context passed to every pipeline step."""
@@ -73,6 +94,7 @@ def run_pipeline(
         steps: Optional subset of steps to run (default: all steps in order).
         data_dir: Optional explicit data directory (default: new timestamped dir).
     """
+    _enforce_quiet_dependency_logging()
     data_dir = resolve_data_dir(customer_name, data_dir)
     customer_config = load_customer_config(customer_name)
     etl_settings = ETLSettings()
@@ -120,6 +142,7 @@ def run_pipeline(
                 customer_name, data_dir, requested_steps)
 
     for step_name in requested_steps:
+        _enforce_quiet_dependency_logging()
         logger.info("Running step: %s", step_name)
         STEP_REGISTRY[step_name](run_context)
         if artifact_uploader:

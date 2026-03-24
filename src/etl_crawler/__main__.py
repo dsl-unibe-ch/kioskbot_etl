@@ -9,7 +9,16 @@ from src.etl_crawler.pipeline import STEP_REGISTRY, run_pipeline
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    force=True,
 )
+
+# Keep noisy dependency loggers from flooding terminal output.
+logging.getLogger("pdfminer").setLevel(logging.WARNING)
+logging.getLogger("pdfplumber").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("azure").setLevel(logging.WARNING)
+logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
 
 
 def main() -> None:
