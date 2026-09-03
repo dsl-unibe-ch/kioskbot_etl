@@ -24,7 +24,7 @@ dependencies = [
     "pre-commit==4.3.0",
     "pytest==9.0.3",
     "openevals==0.1.0",
-    "scrapy==2.16.0",
+    "scrapy==2.17.0",
     "beautifulsoup4==4.13.5",
     "lxml==6.1.0",
     "pytest-playwright==0.7.2",
